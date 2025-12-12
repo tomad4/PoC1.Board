@@ -1,0 +1,11 @@
+{
+    "asset": "18e73dd4cc30dee10a58cc374f31640b",
+    "fileName": "019b09f1-2daa-7ada-97f0-240d4050d209_Preview.png",
+    "prompt": "Green field",
+    "negativePrompt": "no stones, no high grass",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 382675581,
+    "w3CTraceId": "74d41de7c287d68e0b420f40a3caf959",
+    "refinementMode": "Generation"
+}

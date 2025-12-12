@@ -1,0 +1,11 @@
+{
+    "asset": "410168e2e99a0e5af9e30757867f2396",
+    "fileName": "019b09fc-e720-78ae-ae4b-6385eb8a3070_Preview.png",
+    "prompt": "this is box that simulate pawn as player - make top yellow and blad bottom\n",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 2122326888,
+    "w3CTraceId": "8da01410962278403d301b84f71b4ae7",
+    "refinementMode": "Generation"
+}

@@ -1,0 +1,11 @@
+{
+    "asset": "00e57bae2ebc57d9aac66ffbe5625d15",
+    "fileName": "019b09f2-437f-7457-bcef-1ab6e043ade4_Preview.png",
+    "prompt": "stones and marbles, it have to be dark",
+    "negativePrompt": "",
+    "model": "44ec3749-963a-44b1-aa54-dc19f6ed8ab2",
+    "modelName": "Unity Texture2D",
+    "customSeed": 317913746,
+    "w3CTraceId": "0e9070760759458af4f070fdcad79401",
+    "refinementMode": "Generation"
+}
