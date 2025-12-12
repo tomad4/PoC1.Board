@@ -1,131 +1,77 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// HexTile - prosty komponent dla pola heksagonalnego.
-/// Zawiera bezpieczne tworzenie instancji materiałów, flip, reset i reakcję na koniec tury.
-/// </summary>
-public class HexTile : MonoBehaviour, ITurnListener
+public class HexTile : MonoBehaviour
 {
-    [TextArea] public string description = "Puste pole";
-    public Material defaultMat;
-    public Material flippedMat;
+    [Header("Side Objects")]
+    public GameObject frontSide;
+    public GameObject backSide;
+
+    [Header("Flip Pivot")]
+    public Transform hingePivot;
+
+    [Header("State")]
     public bool isFlipped = false;
-    public int lastVisitedTurn = -1;
+    public bool isWalkable = true;
 
-    // runtime renderer & instanced materials
-    private Renderer rend;
-    private Material defaultMatInstance;
-    private Material flippedMatInstance;
+    [Header("Flip Settings")]
+    public float flipDuration = 0.45f;
+    private bool flipping = false;
 
-    void Awake()
+    void Start()
     {
-        rend = GetComponent<Renderer>();
-
-        // Prepare default instance (priority: explicit defaultMat, else sharedMaterial)
-        if (defaultMat != null)
-        {
-            defaultMatInstance = new Material(defaultMat);
-        }
-        else if (rend != null && rend.sharedMaterial != null)
-        {
-            defaultMatInstance = new Material(rend.sharedMaterial);
-        }
-
-        // Prepare flipped instance only if user provided flippedMat
-        if (flippedMat != null)
-        {
-            flippedMatInstance = new Material(flippedMat);
-        }
-
-        // Assign default instance to renderer so runtime changes are safe
-        if (rend != null && defaultMatInstance != null)
-        {
-            rend.material = defaultMatInstance;
-            isFlipped = false;
-            lastVisitedTurn = -1;
-        }
+        UpdateSides();
     }
 
-    // Proste flipowanie: przełącz instancje materiałów
-    public void Flip()
+    void UpdateSides()
     {
-        if (rend == null) rend = GetComponent<Renderer>();
-
-        // jeśli nie masz flippedMatInstance, utwórz ją z flippedMat (jeśli podane)
-        if (flippedMatInstance == null && flippedMat != null)
-            flippedMatInstance = new Material(flippedMat);
-
-        if (!isFlipped)
-        {
-            if (flippedMatInstance != null)
-                rend.material = flippedMatInstance;
-            else
-                Debug.LogWarning($"{name}: flippedMat nie przypisany.");
-            isFlipped = true;
-        }
-        else
-        {
-            if (defaultMatInstance != null)
-                rend.material = defaultMatInstance;
-            isFlipped = false;
-        }
-    }
-    /// <summary>
-    /// Mark tile as visited on given turn and optionally apply visual feedback.
-    /// </summary>
-    public void SetVisited(int turn)
-    {
-        lastVisitedTurn = turn;
-
-        if (rend == null) rend = GetComponent<Renderer>();
-        var mat = rend?.material;
-        if (mat != null)
-        {
-            // Slight visual feedback: tint a bit toward white, or slightly brighten
-            Color baseC = mat.color;
-            Color target = Color.Lerp(baseC, Color.white, 0.08f); // small brighten
-            mat.color = target;
-        }
+        if (frontSide) frontSide.SetActive(!isFlipped);
+        if (backSide) backSide.SetActive(isFlipped);
     }
 
-    // Przywraca tile do stanu początkowego (używane przy ResetGame)
-    public void ResetTile()
+    public void FlipAnimated()
     {
-        isFlipped = false;
-        lastVisitedTurn = -1;
-
-        if (rend == null) rend = GetComponent<Renderer>();
-
-        if (defaultMatInstance == null)
-        {
-            if (defaultMat != null) defaultMatInstance = new Material(defaultMat);
-            else if (rend != null && rend.sharedMaterial != null) defaultMatInstance = new Material(rend.sharedMaterial);
-        }
-
-        if (rend != null && defaultMatInstance != null)
-        {
-            rend.material = defaultMatInstance;
-            transform.localRotation = Quaternion.identity;
-        }
+        if (!flipping)
+            StartCoroutine(DoFlip());
     }
 
-    public string GetDescription() => description;
-
-    // Prosta reakcja na zakończenie tury - delikatne przyciemnienie instancyjnego materiału
-    public void OnTurnEnd(int globalTurn)
+    IEnumerator DoFlip()
     {
-        // debug
-        // Debug.Log($"HexTile.OnTurnEnd {name} turn={globalTurn}");
+        flipping = true;
 
-        if (rend == null) rend = GetComponent<Renderer>();
-        var mat = rend?.material;
-        if (mat != null)
+        float elapsed = 0f;
+
+        Quaternion startRot = transform.rotation;
+        Vector3 pivot = hingePivot.position;
+        Vector3 axis = hingePivot.right; // oś obrotu – możesz zmienić na .up lub .forward
+
+        float totalAngle = 180f;
+
+        while (elapsed < flipDuration)
         {
-            Color c = mat.color;
-            c *= 0.99f; // delikatne przyciemnienie
-            mat.color = c;
+            float t = elapsed / flipDuration;
+            float eased = Mathf.SmoothStep(0, 1, t);
+            float angle = Mathf.Lerp(0, totalAngle, eased);
+
+            transform.rotation = startRot;
+            transform.RotateAround(pivot, axis, angle);
+
+            elapsed += Time.deltaTime;
+            yield return null;
         }
+
+        transform.rotation = startRot;
+        transform.RotateAround(pivot, axis, totalAngle);
+
+        isFlipped = !isFlipped;
+        UpdateSides();
+
+        flipping = false;
+    }
+
+    // To wywołujemy gdy pionek schodzi z pola
+    public void OnPawnExit()
+    {
+        FlipAnimated();
     }
 }
